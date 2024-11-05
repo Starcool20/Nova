@@ -1,0 +1,5 @@
+com.hackathon.nova.test.models-androidTest-0 /storage/emulated/0/AndroidIDEProjects/Nova/models/build/generated/res/resValues/androidTest/debug
+com.hackathon.nova.test.models-mergeDebugAndroidTestResources-1 /storage/emulated/0/AndroidIDEProjects/Nova/models/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/merged.dir
+com.hackathon.nova.test.models-mergeDebugAndroidTestResources-2 /storage/emulated/0/AndroidIDEProjects/Nova/models/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/stripped.dir
+com.hackathon.nova.test.models-merged_res-3 /storage/emulated/0/AndroidIDEProjects/Nova/models/build/intermediates/merged_res/debugAndroidTest
+com.hackathon.nova.test.models-packaged_res-4 /storage/emulated/0/AndroidIDEProjects/Nova/models/build/intermediates/packaged_res/debug

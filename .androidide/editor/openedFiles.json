@@ -1,0 +1,200 @@
+{
+  "allFiles": [
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Nova/app/src/main/java/com/hackathon/nova/overlay/OverlayWindow.java",
+      "selection": {
+        "end": {
+          "column": 19,
+          "index": 6053,
+          "line": 189
+        },
+        "start": {
+          "column": 19,
+          "index": 6053,
+          "line": 189
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Nova/app/src/main/java/com/hackathon/nova/service/NovaAccessibilityService.java",
+      "selection": {
+        "end": {
+          "column": 73,
+          "index": 930,
+          "line": 24
+        },
+        "start": {
+          "column": 73,
+          "index": 930,
+          "line": 24
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Nova/app/src/main/java/com/hackathon/nova/InitNova.java",
+      "selection": {
+        "end": {
+          "column": 4,
+          "index": 243,
+          "line": 16
+        },
+        "start": {
+          "column": 4,
+          "index": 243,
+          "line": 16
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Nova/app/src/main/java/com/hackathon/nova/MainActivity.java",
+      "selection": {
+        "end": {
+          "column": 114,
+          "index": 5488,
+          "line": 154
+        },
+        "start": {
+          "column": 114,
+          "index": 5488,
+          "line": 154
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Nova/app/src/main/java/com/hackathon/nova/speech/VoiceRecognizer.java",
+      "selection": {
+        "end": {
+          "column": 0,
+          "index": 0,
+          "line": 0
+        },
+        "start": {
+          "column": 0,
+          "index": 0,
+          "line": 0
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Nova/app/src/main/java/com/hackathon/nova/audio/AudioRecorder.java",
+      "selection": {
+        "end": {
+          "column": 22,
+          "index": 3966,
+          "line": 119
+        },
+        "start": {
+          "column": 22,
+          "index": 3966,
+          "line": 119
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Nova/app/src/main/res/layout/overlay.xml",
+      "selection": {
+        "end": {
+          "column": 15,
+          "index": 5305,
+          "line": 150
+        },
+        "start": {
+          "column": 15,
+          "index": 5305,
+          "line": 150
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Nova/app/src/main/res/drawable/layout.xml",
+      "selection": {
+        "end": {
+          "column": 0,
+          "index": 0,
+          "line": 0
+        },
+        "start": {
+          "column": 0,
+          "index": 0,
+          "line": 0
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Nova/app/src/main/java/com/hackathon/nova/volume/VolumeControl.java",
+      "selection": {
+        "end": {
+          "column": 71,
+          "index": 569,
+          "line": 16
+        },
+        "start": {
+          "column": 71,
+          "index": 569,
+          "line": 16
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Nova/app/build.gradle",
+      "selection": {
+        "end": {
+          "column": 49,
+          "index": 1008,
+          "line": 49
+        },
+        "start": {
+          "column": 49,
+          "index": 1008,
+          "line": 49
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Nova/app/src/main/java/com/hackathon/nova/database/DatabaseHelper.java",
+      "selection": {
+        "end": {
+          "column": 42,
+          "index": 2227,
+          "line": 59
+        },
+        "start": {
+          "column": 42,
+          "index": 2227,
+          "line": 59
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Nova/app/src/main/java/com/hackathon/nova/database/DatabaseExecutor.java",
+      "selection": {
+        "end": {
+          "column": 87,
+          "index": 242,
+          "line": 6
+        },
+        "start": {
+          "column": 87,
+          "index": 242,
+          "line": 6
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/Nova/app/src/main/java/com/hackathon/nova/database/Data.java",
+      "selection": {
+        "end": {
+          "column": 11,
+          "index": 119,
+          "line": 6
+        },
+        "start": {
+          "column": 11,
+          "index": 119,
+          "line": 6
+        }
+      }
+    }
+  ],
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/Nova/app/src/main/java/com/hackathon/nova/speech/VoiceRecognizer.java"
+}
