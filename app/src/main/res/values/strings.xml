@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Nova</string>
+    <string name="accessibility_service_name">NOVA</string>
+    <string name="accessibility_service_description">
+		<![CDATA[
+        This Accessibility Service empowers users to navigate and control their Android devices using simple voice commands, with the support of GPT-4’s natural language processing capabilities.
+
+        Designed to enhance accessibility and ease of use, the service allows users to perform actions like opening apps, clicking buttons, scrolling, and navigating back without needing technical knowledge or manually interacting with the screen.
+
+        Features:
+        - Voice-Activated Commands
+        - Intelligent Command Processing with GPT-4
+        - Dynamic App Control
+        - Hands-Free Navigation
+        - Inclusive & User-Friendly
+
+        Technical Highlights:
+        - Utilizes the Android Accessibility Service API for screen navigation and control.
+        - Uses GPT-4 to interpret and generate Java code for actions, dynamically executed by the service.
+        - Demonstrates the integration of AI with Android’s Accessibility framework to enhance usability and inclusivity.
+
+        This project showcases a new level of interaction with mobile devices, merging voice-activated commands with accessibility services powered by AI, to create a future-ready solution for accessibility.
+		]]>
+	</string>
+    <string name="nova_icon">Nova Icon</string>
+
+</resources>
