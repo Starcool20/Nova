@@ -34,9 +34,10 @@ public class NovaUtils {
         this.context = context;
     }
 
-    public void startService(String packageName) {
+    public void startService(String packageName, String type) {
         Intent serviceIntent = new Intent(context, ForegroundService.class);
         serviceIntent.putExtra(ForegroundService.EXTRA_DATA, packageName);
+        serviceIntent.putExtra("TYPE", type);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(serviceIntent); // API 26+
@@ -52,27 +53,61 @@ public class NovaUtils {
 
     // 🔹 Open App
     public void openApp(String packageName) {
-        startService(packageName);
-    }
-
-    // 🔹 Call Contact
-    public void callContact(String phoneNumber) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-            requestPermission((Activity) context, Manifest.permission.CALL_PHONE);
-            return;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) { // Android 11+
+            startService(packageName, "open_app");
+        } else {
+            Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
+            if (launchIntent != null) {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(launchIntent);
+            } else {
+                Toast.makeText(context, "App not found", Toast.LENGTH_SHORT).show();
+            }
         }
-        Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + phoneNumber));
-        context.startActivity(intent);
     }
 
-    // 🔹 Set Alarm
-    public void setAlarm(String message, int hour, int minute) {
+    public boolean callContact(String phoneNumber) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(context, "Call permission needed", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        final Intent intent2 = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + phoneNumber));
+        if (intent2.resolveActivity(context.getPackageManager()) == null) {
+            Toast.makeText(context, "No app found to make a call", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startService(phoneNumber, "call_contact");
+        } else {
+            context.startActivity(intent2);
+        }
+        return true;
+    }
+
+
+    public boolean setAlarm(String message, int hour, int minute) {
         Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM);
         intent.putExtra(AlarmClock.EXTRA_MESSAGE, message);
         intent.putExtra(AlarmClock.EXTRA_HOUR, hour);
         intent.putExtra(AlarmClock.EXTRA_MINUTES, minute);
-        context.startActivity(intent);
+
+        // Check if there's an app that can handle the intent
+        if (intent.resolveActivity(context.getPackageManager()) == null) {
+            Toast.makeText(context, "No app found to set an alarm", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        try {
+            context.startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(context, "Failed to set alarm: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
     }
+
 
     // 🔹 Play Song
     public void playSong(String songName) {

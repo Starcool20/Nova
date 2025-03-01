@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.widget.Toast;
@@ -26,7 +27,8 @@ public class ForegroundService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        final String packageName = intent.getStringExtra(EXTRA_DATA);
+        final String value = intent.getStringExtra(EXTRA_DATA);
+        final String type = intent.getStringExtra("TYPE");
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Nova Is Running")
                 .setContentText("Nova foreground service")
@@ -37,12 +39,18 @@ public class ForegroundService extends Service {
 
         // TODO: Your service logic here (e.g., playing music, tracking location)
 
-        assert packageName != null;
-        Intent launchIntent = getPackageManager().getLaunchIntentForPackage(packageName);
-        if (launchIntent != null) {
-            startActivity(launchIntent);
-        } else {
-            Toast.makeText(this, "App not found", Toast.LENGTH_SHORT).show();
+        assert type != null;
+        if (type.equals("open_app")) {
+            assert value != null;
+            Intent launchIntent = getPackageManager().getLaunchIntentForPackage(value);
+            if (launchIntent != null) {
+                startActivity(launchIntent);
+            } else {
+                Toast.makeText(this, "App not found", Toast.LENGTH_SHORT).show();
+            }
+        } else if (type.equals("call_contact")) {
+            final Intent intent2 = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + value));
+            startActivity(intent2);
         }
 
         stopMyService();
