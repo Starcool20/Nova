@@ -168,9 +168,7 @@ public class VoiceRecognizer implements RecognitionListener {
     }
 
     public static void transcribeVoice() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
-            filePath = context.getExternalFilesDir(null).getAbsolutePath(); // Ensure path is correct
-        }
+        filePath = context.getExternalFilesDir(null).getAbsolutePath(); // Ensure path is correct
         audioFile = new File(filePath, "nova.m4a");
 
         Retrofit retrofit = RetrofitClient.getClient();

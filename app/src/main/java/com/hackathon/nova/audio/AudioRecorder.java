@@ -21,7 +21,7 @@ public class AudioRecorder {
     // private ArrayList<ExecutorService> executorList = new ArrayList<>(); // List to store all
     // instances
     private static MediaRecorder mediaRecorder;
-    private Context context;
+    private final Context context;
     private ScheduledExecutorService executorService;
     private boolean stop = false;
     private int calledCount = 0;
@@ -55,11 +55,10 @@ public class AudioRecorder {
             executorService = Executors.newSingleThreadScheduledExecutor();
 
             // Schedule `detectVoice` task every 100ms
-            executorService.scheduleAtFixedRate(this::detectVoice, 0, 100, TimeUnit.MILLISECONDS);
+            executorService.scheduleWithFixedDelay(this::detectVoice, 0, 100, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             stopAllRecordings();
             OverlayWindow.showError();
-            e.printStackTrace();
             Toast.makeText(context, "Failed to start nova: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
@@ -99,7 +98,7 @@ public class AudioRecorder {
 
     private void onAmplitudeChanged(int amplitude) {
         Log.d("Amplitude", String.valueOf(amplitude));
-        if (amplitude < 3000 && calledCount == 20) {
+        if (amplitude < 4000 && calledCount == 15) {
             stopRecording(0);
 
             if (isSpeechDetected) {
@@ -119,7 +118,7 @@ public class AudioRecorder {
 
             return;
         }
-        if (amplitude < 3000) {
+        if (amplitude < 3500) {
             isSpeechDetected = true;
             calledCount = calledCount + 1;
         } else {
