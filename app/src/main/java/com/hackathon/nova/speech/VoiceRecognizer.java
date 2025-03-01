@@ -9,6 +9,8 @@ import android.speech.SpeechRecognizer;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
 import com.google.gson.JsonObject;
 import com.hackathon.nova.MainActivity;
 import com.hackathon.nova.R;
@@ -239,40 +241,43 @@ public class VoiceRecognizer implements RecognitionListener {
         call.enqueue(
                 new Callback<ResponseBody>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             OverlayWindow.response();
 
-                            try (BufferedSource source = response.body().source()) {
-                                // Step 1: Read Metadata
-                                String metadataLine = source.readUtf8LineStrict(); // Read the first line as metadata
-                                JSONObject metadata = new JSONObject(metadataLine);
-                                String transcript = metadata.getString("transcript");
-                                String serverResponse = metadata.getString("response");
-                                saveTranscriptAndResponse(transcript, serverResponse);
+                            try {
+                                assert response.body() != null;
+                                try (BufferedSource source = response.body().source()) {
+                                    // Step 1: Read Metadata
+                                    String metadataLine = source.readUtf8LineStrict(); // Read the first line as metadata
+                                    JSONObject metadata = new JSONObject(metadataLine);
+                                    String transcript = metadata.getString("transcript");
+                                    String serverResponse = metadata.getString("response");
+                                    saveTranscriptAndResponse(transcript, serverResponse);
 
-                                // Step 2: Prepare to Save the Audio
-                                File audioFile = new File(context.getExternalFilesDir(null), "streamed_audio.mp3");
-                                try (Sink sink = Okio.sink(audioFile)) {
-                                    // Step 3: Write Binary Audio Data
-                                    source.readAll(sink); // Write the remaining binary data to the audio file
+                                    // Step 2: Prepare to Save the Audio
+                                    File audioFile = new File(context.getExternalFilesDir(null), "streamed_audio.mp3");
+                                    try (Sink sink = Okio.sink(audioFile)) {
+                                        // Step 3: Write Binary Audio Data
+                                        source.readAll(sink); // Write the remaining binary data to the audio file
+                                    }
+
+                                    Log.d("Metadata", "Transcript: " + transcript + ", Response: " + serverResponse);
+                                    Log.d("Audio", "Audio file saved to: " + audioFile.getAbsolutePath());
+
+                                    // Play the audio
+                                    MediaPlayer mediaPlayer = new MediaPlayer();
+                                    mediaPlayer.setDataSource(audioFile.getAbsolutePath());
+                                    mediaPlayer.prepare();
+                                    mediaPlayer.start();
+                                    mediaPlayer.setOnCompletionListener(
+                                            mp -> {
+                                                // mp.release();
+                                                saveResponse = false;
+                                                // tempAudioFile.delete();
+                                                OverlayWindow.destroy();
+                                            });
                                 }
-
-                                Log.d("Metadata", "Transcript: " + transcript + ", Response: " + serverResponse);
-                                Log.d("Audio", "Audio file saved to: " + audioFile.getAbsolutePath());
-
-                                // Play the audio
-                                MediaPlayer mediaPlayer = new MediaPlayer();
-                                mediaPlayer.setDataSource(audioFile.getAbsolutePath());
-                                mediaPlayer.prepare();
-                                mediaPlayer.start();
-                                mediaPlayer.setOnCompletionListener(
-                                        mp -> {
-                                            // mp.release();
-                                            saveResponse = false;
-                                            // tempAudioFile.delete();
-                                            OverlayWindow.destroy();
-                                        });
                             } catch (Exception e) {
                                 showMessage(e.getMessage());
                                 Log.d("VoiceRecognizer", e.getMessage());
