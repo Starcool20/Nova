@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 import android.widget.Toast;
@@ -17,6 +18,7 @@ import com.hackathon.nova.audio.AudioRecorder;
 import com.hackathon.nova.database.Data;
 import com.hackathon.nova.database.DatabaseHelper;
 import com.hackathon.nova.database.ExecutorThread;
+import com.hackathon.nova.helper.DateTimeHelper;
 import com.hackathon.nova.overlay.OverlayWindow;
 import com.hackathon.nova.preference.PreferenceUtil;
 import com.hackathon.nova.volume.VolumeControl;
@@ -71,7 +73,9 @@ public class VoiceRecognizer implements RecognitionListener {
 
     public VoiceRecognizer(Context context) {
         this.context = context;
-        filePath = context.getExternalFilesDir(null).getAbsolutePath(); // Ensure path is correct
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+            filePath = context.getExternalFilesDir(null).getAbsolutePath(); // Ensure path is correct
+        }
         audioFile = new File(filePath, "nova.m4a");
         audioRecorder = new AudioRecorder(context);
         this.audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -162,7 +166,9 @@ public class VoiceRecognizer implements RecognitionListener {
     }
 
     public static void transcribeVoice() {
-        filePath = context.getExternalFilesDir(null).getAbsolutePath(); // Ensure path is correct
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
+            filePath = context.getExternalFilesDir(null).getAbsolutePath(); // Ensure path is correct
+        }
         audioFile = new File(filePath, "nova.m4a");
 
         Retrofit retrofit = RetrofitClient.getClient();
@@ -200,16 +206,23 @@ public class VoiceRecognizer implements RecognitionListener {
         jsonObject.addProperty("user8_response", "");
         jsonObject.addProperty("user9", "");
         jsonObject.addProperty("user9_response", "");
+        jsonObject.addProperty("installed_apps", "");
+        jsonObject.addProperty("date", DateTimeHelper.getCurrentDate());
+        jsonObject.addProperty("time", DateTimeHelper.getCurrentTime());
 
         if (dataList != null && !dataList.isEmpty()) {
             for (Data data : dataList) {
                 if (data.getKey().endsWith("_transcript")) {
-                    jsonObject.addProperty("user" + data.getKey().substring(4, 5), data.getName());
+                    jsonObject.addProperty("user" + data.getKey().charAt(4), data.getName());
                 }
 
                 if (data.getKey().endsWith("_response")) {
                     jsonObject.addProperty(
-                            "user" + data.getKey().substring(4, 5) + "_response", data.getName());
+                            "user" + data.getKey().charAt(4) + "_response", data.getName());
+                }
+
+                if (data.getKey().equals("installed_apps")) {
+                    jsonObject.addProperty("installed_apps", data.getName());
                 }
             }
             jsonObject.addProperty("count", String.valueOf(dataList.size()));

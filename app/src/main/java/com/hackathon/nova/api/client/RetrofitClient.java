@@ -15,9 +15,9 @@ public class RetrofitClient {
         if (retrofit == null) {
             // Configure OkHttpClient with custom timeouts
             OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                    .connectTimeout(10000, TimeUnit.SECONDS)
-                    .readTimeout(10000, TimeUnit.SECONDS)
-                    .writeTimeout(10000, TimeUnit.SECONDS)
+                    .connectTimeout(15, TimeUnit.SECONDS)
+                    .readTimeout(10, TimeUnit.SECONDS)
+                    .writeTimeout(30, TimeUnit.SECONDS)
                     .build();
 
             // Initialize Retrofit with the custom OkHttpClient
