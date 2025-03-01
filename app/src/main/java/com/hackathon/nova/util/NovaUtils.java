@@ -12,6 +12,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.AlarmClock;
 import android.provider.MediaStore;
@@ -20,6 +21,8 @@ import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.hackathon.nova.service.ForegroundService;
 
 import java.io.File;
 
@@ -31,14 +34,25 @@ public class NovaUtils {
         this.context = context;
     }
 
+    public void startService(String packageName) {
+        Intent serviceIntent = new Intent(context, ForegroundService.class);
+        serviceIntent.putExtra(ForegroundService.EXTRA_DATA, packageName);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(serviceIntent); // API 26+
+        } else {
+            context.startService(serviceIntent); // API 21-25
+        }
+    }
+
+    public void stopService() {
+        Intent serviceIntent = new Intent(context, ForegroundService.class);
+        context.stopService(serviceIntent);
+    }
+
     // 🔹 Open App
     public void openApp(String packageName) {
-        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
-        if (launchIntent != null) {
-            context.startActivity(launchIntent);
-        } else {
-            Toast.makeText(context, "App not found", Toast.LENGTH_SHORT).show();
-        }
+        startService(packageName);
     }
 
     // 🔹 Call Contact

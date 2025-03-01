@@ -118,7 +118,7 @@ public class AudioRecorder {
 
             return;
         }
-        if (amplitude < 3500) {
+        if (amplitude < 4000) {
             isSpeechDetected = true;
             calledCount = calledCount + 1;
         } else {
