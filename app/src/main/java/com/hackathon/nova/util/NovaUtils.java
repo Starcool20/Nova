@@ -14,9 +14,9 @@ import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
+import android.os.StatFs;
 import android.provider.AlarmClock;
 import android.provider.MediaStore;
-import android.telephony.SmsManager;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
@@ -34,10 +34,12 @@ public class NovaUtils {
         this.context = context;
     }
 
-    public void startService(String packageName, String type) {
+    public void startService(String packageName, int hour, int minutes, String type) {
         Intent serviceIntent = new Intent(context, ForegroundService.class);
         serviceIntent.putExtra(ForegroundService.EXTRA_DATA, packageName);
         serviceIntent.putExtra("TYPE", type);
+        serviceIntent.putExtra("HOUR", hour);
+        serviceIntent.putExtra("MINUTES", minutes);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(serviceIntent); // API 26+
@@ -54,7 +56,7 @@ public class NovaUtils {
     // 🔹 Open App
     public void openApp(String packageName) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) { // Android 11+
-            startService(packageName, "open_app");
+            startService(packageName, 0, 0, "open_app");
         } else {
             Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
             if (launchIntent != null) {
@@ -79,7 +81,7 @@ public class NovaUtils {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startService(phoneNumber, "call_contact");
+            startService(phoneNumber, 0, 0, "call_contact");
         } else {
             context.startActivity(intent2);
         }
@@ -99,48 +101,90 @@ public class NovaUtils {
             return false;
         }
 
-        try {
-            context.startActivity(intent);
-        } catch (Exception e) {
-            Toast.makeText(context, "Failed to set alarm: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            return false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startService(message, hour, minute, "set_alarm");
+        } else {
+            try {
+                context.startActivity(intent);
+            } catch (Exception e) {
+                Toast.makeText(context, "Failed to set alarm: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                return false;
+            }
         }
         return true;
     }
 
 
     // 🔹 Play Song
-    public void playSong(String songName) {
+    public boolean playSong(String songName) {
         Intent intent = new Intent(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH);
         intent.putExtra(MediaStore.EXTRA_MEDIA_FOCUS, MediaStore.Audio.Media.TITLE);
         intent.putExtra(SearchManager.QUERY, songName);
-        context.startActivity(intent);
-    }
 
-    // 🔹 Send SMS
-    public void sendSMS(String phoneNumber, String message) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
-            requestPermission((Activity) context, Manifest.permission.SEND_SMS);
-            return;
+        // Check if any app can handle the intent
+        if (intent.resolveActivity(context.getPackageManager()) == null) {
+            Toast.makeText(context, "No app found to play the song", Toast.LENGTH_SHORT).show();
+            return false;
         }
-        SmsManager smsManager = SmsManager.getDefault();
-        smsManager.sendTextMessage(phoneNumber, null, message, null, null);
-        Toast.makeText(context, "Message sent", Toast.LENGTH_SHORT).show();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startService(songName, 0, 0, "play_song");
+        } else {
+            try {
+                context.startActivity(Intent.createChooser(intent, "Select a Music Player"));
+            } catch (Exception e) {
+                Toast.makeText(context, "Failed to play song: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        }
+        return true;
     }
 
-    // 🔹 Check Battery
+
+    public boolean sendSMS(String phoneNumber, String message) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse("smsto:" + phoneNumber));
+        intent.putExtra("sms_body", message);
+        if (intent.resolveActivity(context.getPackageManager()) == null) {
+            Toast.makeText(context, "No SMS app found!", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startService(message, 0, 0, "send_sms");
+        } else {
+            try {
+                context.startActivity(intent);
+            } catch (Exception e) {
+                Toast.makeText(context, "Failed to send SMS: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     public String checkBattery() {
         BatteryManager batteryManager = (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
-        int batteryLevel = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-        return "Battery Level: " + batteryLevel + "%";
+        if (batteryManager != null) {
+            int batteryLevel = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
+            return "Battery Level: " + batteryLevel + "%";
+        } else {
+            return "Battery info not available";
+        }
     }
 
-    // 🔹 Check Storage
+
     public String checkStorage() {
-        File path = Environment.getExternalStorageDirectory();
-        long freeSpace = path.getFreeSpace() / (1024 * 1024 * 1024); // GB
+        File path = Environment.getDataDirectory(); // Internal storage
+        StatFs stat = new StatFs(path.getPath());
+
+        long blockSize = stat.getBlockSizeLong();
+        long availableBlocks = stat.getAvailableBlocksLong();
+        long freeSpace = (availableBlocks * blockSize) / (1024 * 1024 * 1024); // Convert to GB
+
         return "Free Storage: " + freeSpace + " GB";
     }
+
 
     // 🔹 Check RAM
     public String checkRAM() {
