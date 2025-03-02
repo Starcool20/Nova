@@ -1,7 +1,6 @@
 package com.hackathon.nova.util;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +8,8 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.BatteryManager;
@@ -19,7 +20,6 @@ import android.provider.AlarmClock;
 import android.provider.MediaStore;
 import android.widget.Toast;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.hackathon.nova.service.ForegroundService;
@@ -191,17 +191,12 @@ public class NovaUtils {
         return "RAM information is not directly accessible in newer Android versions.";
     }
 
-    // 🔹 Check Temperature
-    public String checkTemperature() {
-        return "Temperature access requires root privileges.";
-    }
-
     // 🔹 Check Location
     public String checkLocation() {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermission((Activity) context, Manifest.permission.ACCESS_FINE_LOCATION);
             return "Location permission needed.";
         }
+
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if (location != null) {
@@ -211,27 +206,45 @@ public class NovaUtils {
         }
     }
 
-    // 🔹 Check Internet
+    // 🔹 Check Internet (Works on API 21 to 36)
     public String checkInternet() {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnected() ? "Internet is available" : "No internet connection";
+
+        if (cm == null) return "No internet connection";
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            // ✅ Android 6+ (API 23+): Use getNetworkCapabilities()
+            Network network = cm.getActiveNetwork();
+            if (network == null) return "No internet connection";
+
+            NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
+            if (capabilities == null) return "No internet connection";
+
+            if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                return "Internet is available";
+            }
+        } else {
+            // ✅ Android 5 (API 21-22): Use the old method
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            if (activeNetwork != null && activeNetwork.isConnected()) {
+                return "Internet is available";
+            }
+        }
+
+        return "No internet connection";
     }
 
-    // 🔹 Toggle Flashlight (API 23+)
-    public void toggleFlashlight(boolean enable) {
+    public void sendMessageToWhatsApp(String phoneNumber, String message) {
         try {
-            android.hardware.camera2.CameraManager cameraManager = (android.hardware.camera2.CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
-            String cameraId = cameraManager.getCameraIdList()[0];
-            cameraManager.setTorchMode(cameraId, enable);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            String url = "https://wa.me/" + phoneNumber + "?text=" + Uri.encode(message);
+            intent.setData(Uri.parse(url));
+            intent.setPackage("com.whatsapp");
+            context.startActivity(intent);
         } catch (Exception e) {
-            e.printStackTrace();
+            Toast.makeText(context, "WhatsApp not installed!", Toast.LENGTH_SHORT).show();
         }
     }
-
-    // 🔹 Request Permission (Runtime)
-    private void requestPermission(Activity activity, String permission) {
-        ActivityCompat.requestPermissions(activity, new String[]{permission}, REQUEST_PERMISSION);
-    }
 }
-
