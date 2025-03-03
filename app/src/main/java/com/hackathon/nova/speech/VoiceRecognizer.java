@@ -319,6 +319,20 @@ public class VoiceRecognizer implements RecognitionListener {
 
     private static void processJsonOutput(Response<ResponseBody> response) {
         // Handle json response
+        if (response.body() == null) {
+            Log.e("VoiceRecognizer", "Response body is null");
+            OverlayWindow.showError();
+            return;
+        }
+
+        try {
+            JSONObject jsonObject = new JSONObject(response.body().string());
+            String transcript = jsonObject.getString("transcript");
+            String responseText = jsonObject.getString("response");
+        } catch (Exception e) {
+            Log.e("VoiceRecognizer", "Error processing response: " + e.getMessage(), e);
+            OverlayWindow.showError();
+        }
     }
 
     private static void cancelNetworkRequest() {
