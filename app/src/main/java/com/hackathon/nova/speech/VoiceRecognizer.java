@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.os.Build;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 import android.widget.Toast;
@@ -75,9 +74,7 @@ public class VoiceRecognizer implements RecognitionListener {
 
     public VoiceRecognizer(Context context) {
         this.context = context;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO) {
-            filePath = context.getExternalFilesDir(null).getAbsolutePath(); // Ensure path is correct
-        }
+        filePath = context.getExternalFilesDir(null).getAbsolutePath(); // Ensure path is correct
         audioFile = new File(filePath, "nova.m4a");
         audioRecorder = new AudioRecorder(context);
         this.audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -242,43 +239,16 @@ public class VoiceRecognizer implements RecognitionListener {
                     public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
                             OverlayWindow.response();
+                            String contentType = response.headers().get("Content-Type");
 
-                            try {
-                                assert response.body() != null;
-                                try (BufferedSource source = response.body().source()) {
-                                    // Step 1: Read Metadata
-                                    String metadataLine = source.readUtf8LineStrict(); // Read the first line as metadata
-                                    JSONObject metadata = new JSONObject(metadataLine);
-                                    String transcript = metadata.getString("transcript");
-                                    String serverResponse = metadata.getString("response");
-                                    saveTranscriptAndResponse(transcript, serverResponse);
-
-                                    // Step 2: Prepare to Save the Audio
-                                    File audioFile = new File(context.getExternalFilesDir(null), "streamed_audio.mp3");
-                                    try (Sink sink = Okio.sink(audioFile)) {
-                                        // Step 3: Write Binary Audio Data
-                                        source.readAll(sink); // Write the remaining binary data to the audio file
-                                    }
-
-                                    Log.d("Metadata", "Transcript: " + transcript + ", Response: " + serverResponse);
-                                    Log.d("Audio", "Audio file saved to: " + audioFile.getAbsolutePath());
-
-                                    // Play the audio
-                                    MediaPlayer mediaPlayer = new MediaPlayer();
-                                    mediaPlayer.setDataSource(audioFile.getAbsolutePath());
-                                    mediaPlayer.prepare();
-                                    mediaPlayer.start();
-                                    mediaPlayer.setOnCompletionListener(
-                                            mp -> {
-                                                // mp.release();
-                                                saveResponse = false;
-                                                // tempAudioFile.delete();
-                                                OverlayWindow.destroy();
-                                            });
+                            if (contentType != null) {
+                                if (contentType.contains("application/json")) {
+                                    processJsonOutput(response);
+                                } else if (contentType.contains("application/octet-stream")) {
+                                    processBinaryOutput(response);
                                 }
-                            } catch (Exception e) {
-                                showMessage(e.getMessage());
-                                Log.d("VoiceRecognizer", e.getMessage());
+                            } else {
+                                showMessage("Error: Content-Type header not found");
                                 OverlayWindow.showError();
                             }
                         } else {
@@ -289,7 +259,7 @@ public class VoiceRecognizer implements RecognitionListener {
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
                         if (call.isCanceled()) {
                             // Handle cancellation
                             OverlayWindow.destroy();
@@ -302,6 +272,53 @@ public class VoiceRecognizer implements RecognitionListener {
                         }
                     }
                 });
+    }
+
+    private static void processBinaryOutput(Response<ResponseBody> response) {
+        if (response.body() == null) {
+            Log.e("VoiceRecognizer", "Response body is null");
+            OverlayWindow.showError();
+            return;
+        }
+
+        File audioFile = new File(context.getExternalFilesDir(null), "streamed_audio.mp3");
+
+        try (BufferedSource source = response.body().source()) {
+            // Read metadata (first line)
+            JSONObject metadata = new JSONObject(source.readUtf8LineStrict());
+            saveTranscriptAndResponse(metadata.getString("transcript"), metadata.getString("response"));
+
+            // Save audio data
+            try (Sink sink = Okio.sink(audioFile)) {
+                source.readAll(sink);
+            }
+
+            Log.d("Metadata", "Transcript: " + metadata.getString("transcript") + ", Response: " + metadata.getString("response"));
+            Log.d("Audio", "Audio file saved to: " + audioFile.getAbsolutePath());
+
+            // Play audio
+            playAudio(audioFile);
+
+        } catch (Exception e) {
+            Log.e("VoiceRecognizer", "Error processing response: " + e.getMessage(), e);
+            OverlayWindow.showError();
+        }
+    }
+
+    private static void playAudio(File audioFile) throws IOException {
+        MediaPlayer mediaPlayer = new MediaPlayer();
+        mediaPlayer.setDataSource(audioFile.getAbsolutePath());
+        mediaPlayer.prepare();
+        mediaPlayer.start();
+        mediaPlayer.setOnCompletionListener(mp -> {
+            saveResponse = false;
+            OverlayWindow.destroy();
+        });
+    }
+
+
+    private static void processJsonOutput(Response<ResponseBody> response) {
+        // Handle json response
     }
 
     private static void cancelNetworkRequest() {
@@ -322,56 +339,52 @@ public class VoiceRecognizer implements RecognitionListener {
                 .execute(
                         () -> {
                             final DatabaseHelper databaseHelper = new DatabaseHelper(context);
-                            // Extract data
-                            String transcription = transcript;
-                            String responseText = response;
-
                             // Save the data
                             List<Data> dataList = databaseHelper.getAllData();
                             if (dataList != null && !dataList.isEmpty()) {
                                 if (dataList.size() == 2) {
-                                    databaseHelper.insertData(transcription, "user1_transcript");
-                                    databaseHelper.insertData(responseText, "user1_response");
+                                    databaseHelper.insertData(transcript, "user1_transcript");
+                                    databaseHelper.insertData(response, "user1_response");
                                     databaseHelper.closeDatabase();
                                 } else if (dataList.size() == 4) {
-                                    databaseHelper.insertData(transcription, "user2_transcript");
-                                    databaseHelper.insertData(responseText, "user2_response");
+                                    databaseHelper.insertData(transcript, "user2_transcript");
+                                    databaseHelper.insertData(response, "user2_response");
                                     databaseHelper.closeDatabase();
                                 } else if (dataList.size() == 6) {
-                                    databaseHelper.insertData(transcription, "user3_transcript");
-                                    databaseHelper.insertData(responseText, "user3_response");
+                                    databaseHelper.insertData(transcript, "user3_transcript");
+                                    databaseHelper.insertData(response, "user3_response");
                                     databaseHelper.closeDatabase();
                                 } else if (dataList.size() == 8) {
-                                    databaseHelper.insertData(transcription, "user4_transcript");
-                                    databaseHelper.insertData(responseText, "user4_response");
+                                    databaseHelper.insertData(transcript, "user4_transcript");
+                                    databaseHelper.insertData(response, "user4_response");
                                     databaseHelper.closeDatabase();
                                 } else if (dataList.size() == 10) {
-                                    databaseHelper.insertData(transcription, "user5_transcript");
-                                    databaseHelper.insertData(responseText, "user5_response");
+                                    databaseHelper.insertData(transcript, "user5_transcript");
+                                    databaseHelper.insertData(response, "user5_response");
                                     databaseHelper.closeDatabase();
                                 } else if (dataList.size() == 12) {
-                                    databaseHelper.insertData(transcription, "user6_transcript");
-                                    databaseHelper.insertData(responseText, "user6_response");
+                                    databaseHelper.insertData(transcript, "user6_transcript");
+                                    databaseHelper.insertData(response, "user6_response");
                                     databaseHelper.closeDatabase();
                                 } else if (dataList.size() == 14) {
-                                    databaseHelper.insertData(transcription, "user7_transcript");
-                                    databaseHelper.insertData(responseText, "user7_response");
+                                    databaseHelper.insertData(transcript, "user7_transcript");
+                                    databaseHelper.insertData(response, "user7_response");
                                     databaseHelper.closeDatabase();
                                 } else if (dataList.size() == 16) {
-                                    databaseHelper.insertData(transcription, "user8_transcript");
-                                    databaseHelper.insertData(responseText, "user8_response");
+                                    databaseHelper.insertData(transcript, "user8_transcript");
+                                    databaseHelper.insertData(response, "user8_response");
                                     databaseHelper.closeDatabase();
                                 } else if (dataList.size() == 18) {
-                                    databaseHelper.insertData(transcription, "user9_transcript");
-                                    databaseHelper.insertData(responseText, "user9_response");
+                                    databaseHelper.insertData(transcript, "user9_transcript");
+                                    databaseHelper.insertData(response, "user9_response");
                                     databaseHelper.closeDatabase();
                                 } else if (dataList.size() == 20) {
                                     // Update and overwrite to database accordingly
-                                    updateDB(databaseHelper, transcription, responseText);
+                                    updateDB(databaseHelper, transcript, response);
                                 }
                             } else {
-                                databaseHelper.insertData(transcription, "user0_transcript");
-                                databaseHelper.insertData(responseText, "user0_response");
+                                databaseHelper.insertData(transcript, "user0_transcript");
+                                databaseHelper.insertData(response, "user0_response");
                                 databaseHelper.closeDatabase();
                             }
                         });
