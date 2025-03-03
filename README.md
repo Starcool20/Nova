@@ -21,7 +21,7 @@ Whether you’re looking for a brief chat or a quick laugh, Nova is here for you
 2. **AI Processing:** Audio data is sent securely to a server where GPT-powered processing provides a customized response.
 3. **Instant Interaction:** Nova’s overlay button appears on your screen, allowing you to instantly summon and interact with the assistant.
 
-> **Server Repository:** The server code for processing requests can be found [here]([https://github.com/Starcool20/Nova---AI-Server]).
+> **Server Repository:** The server code for processing requests can be found [here](https://github.com/Starcool20/Nova---AI-Server).
 
 ## Android Version Support
 - The built APK supports Android 7.1 (API level 25) to Android 14 (API level 34).
