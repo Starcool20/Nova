@@ -4,10 +4,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.MediaPlayer;
+import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
+import com.hackathon.nova.overlay.OverlayWindow;
 import com.hackathon.nova.util.NovaUtils;
+
+import java.io.IOException;
 
 public class Command {
     private static BroadcastReceiver myReceiver;
@@ -19,7 +24,7 @@ public class Command {
         if (command.startsWith("open")) {
             String msg = novaUtils.openApp(command.substring(5).trim());
             if (!msg.equals("Ongoing")) {
-                getSpeech(context);
+                getSpeech(context, msg);
             }
         } else if (commands.startsWith("call")) {
 
@@ -111,12 +116,13 @@ public class Command {
         myReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-
+                String text = intent.getStringExtra("SUCCESS");
+                getSpeech(context, text);
             }
         };
 
         // Register the receiver
-        IntentFilter filter = new IntentFilter("com.hackathon.nova.COMMAND_FORGROUND_SERVICE");
+        IntentFilter filter = new IntentFilter("com.hackathon.nova.COMMAND_FOREGROUND_SERVICE");
         ContextCompat.registerReceiver(context, myReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
@@ -127,7 +133,30 @@ public class Command {
         }
     }
 
-    private static void getSpeech(Context context) {
+    private static void getSpeech(Context context, String text) {
+        if (text != null) {
+            if (text.equals("App not found")) {
+                playAudio(context, "nova_app_not_found");
+            } else if (text.equals("Success")) {
+                playAudio(context, "nova_done");
+            } else if (text.equals("Ongoing")) {
+                playAudio(context, "error");
+            }
+        }
+    }
 
+    private static void playAudio(Context context, String audioFile) {
+        try {
+            MediaPlayer mediaPlayer = new MediaPlayer();
+            mediaPlayer.setDataSource(context.getExternalFilesDir(null) + "/" + audioFile + ".mp3");
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+            mediaPlayer.setOnCompletionListener(mp -> {
+                mp.release();
+                OverlayWindow.destroy();
+            });
+        } catch (IOException e) {
+            Log.e("Command", "Error playing audio: " + e.getMessage());
+        }
     }
 }

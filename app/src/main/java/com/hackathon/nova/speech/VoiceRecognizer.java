@@ -14,7 +14,7 @@ import com.google.gson.JsonObject;
 import com.hackathon.nova.MainActivity;
 import com.hackathon.nova.R;
 import com.hackathon.nova.api.client.RetrofitClient;
-import com.hackathon.nova.api.interfaces.ApiService;
+import com.hackathon.nova.api.service.ApiService;
 import com.hackathon.nova.audio.AudioRecorder;
 import com.hackathon.nova.command.Command;
 import com.hackathon.nova.database.Data;

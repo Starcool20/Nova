@@ -49,11 +49,7 @@ public class ForegroundService extends Service {
         if (type.equals("open_app")) {
             assert value != null;
             final Intent launchIntent = getPackageManager().getLaunchIntentForPackage(value);
-            if (launchIntent != null) {
                 startActivity(launchIntent);
-            } else {
-                Toast.makeText(this, "App not found", Toast.LENGTH_SHORT).show();
-            }
         } else if (type.equals("call_contact")) {
             final Intent intent2 = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + value));
             startActivity(intent2);
