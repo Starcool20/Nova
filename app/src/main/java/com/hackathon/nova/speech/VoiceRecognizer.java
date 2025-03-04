@@ -16,12 +16,14 @@ import com.hackathon.nova.R;
 import com.hackathon.nova.api.client.RetrofitClient;
 import com.hackathon.nova.api.interfaces.ApiService;
 import com.hackathon.nova.audio.AudioRecorder;
+import com.hackathon.nova.command.Command;
 import com.hackathon.nova.database.Data;
 import com.hackathon.nova.database.DatabaseHelper;
 import com.hackathon.nova.database.ExecutorThread;
 import com.hackathon.nova.helper.DateTimeHelper;
 import com.hackathon.nova.overlay.OverlayWindow;
 import com.hackathon.nova.preference.PreferenceUtil;
+import com.hackathon.nova.util.NovaUtils;
 import com.hackathon.nova.volume.VolumeControl;
 
 import org.json.JSONObject;
@@ -238,13 +240,14 @@ public class VoiceRecognizer implements RecognitionListener {
                     @Override
                     public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
-                            OverlayWindow.response();
                             String contentType = response.headers().get("Content-Type");
 
                             if (contentType != null) {
                                 if (contentType.contains("application/json")) {
+                                    OverlayWindow.initiate();
                                     processJsonOutput(response);
                                 } else if (contentType.contains("application/octet-stream")) {
+                                    OverlayWindow.response();
                                     processBinaryOutput(response);
                                 }
                             } else {
@@ -327,8 +330,12 @@ public class VoiceRecognizer implements RecognitionListener {
 
         try {
             JSONObject jsonObject = new JSONObject(response.body().string());
-            String transcript = jsonObject.getString("transcript");
+            String command = jsonObject.getString("transcript");
             String responseText = jsonObject.getString("response");
+
+            saveTranscriptAndResponse(command, responseText);
+
+            Command.execute(context, command);
         } catch (Exception e) {
             Log.e("VoiceRecognizer", "Error processing response: " + e.getMessage(), e);
             OverlayWindow.showError();
@@ -499,6 +506,9 @@ public class VoiceRecognizer implements RecognitionListener {
         }
 
         audioRecorder.stopRecording(0);
+        Command.unRegisterReceiver(context);
+
+        new NovaUtils(context).stopService();
     }
 
     @Override

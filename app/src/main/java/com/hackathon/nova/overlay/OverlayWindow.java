@@ -148,6 +148,7 @@ public class OverlayWindow {
     }
 
     public static void destroy() {
+        removeText();
         stopAnimation = true;
         showViewWithAnim(1f, 0f);
     }
@@ -164,6 +165,19 @@ public class OverlayWindow {
         scaleAnimator.start();
 
         registerListeners();
+    }
+
+    private static void removeText() {
+        a.setText("");
+        b.setText("");
+        c.setText("");
+        d.setText("");
+        e.setText("");
+        f.setText("");
+        g.setText("");
+        h.setText("");
+        i.setText("");
+        j.setText("");
     }
 
     public static void processingAudio() {
@@ -187,6 +201,19 @@ public class OverlayWindow {
         e.setText("o");
         f.setText("n");
         g.setText("d");
+        h.setText("i");
+        i.setText("n");
+        j.setText("g");
+    }
+
+    public static void initiate() {
+        a.setText("I");
+        b.setText("n");
+        c.setText("i");
+        d.setText("t");
+        e.setText("i");
+        f.setText("a");
+        g.setText("t");
         h.setText("i");
         i.setText("n");
         j.setText("g");

@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
+import com.hackathon.nova.command.Command;
 import com.hackathon.nova.service.ForegroundService;
 
 import java.io.File;
@@ -54,18 +55,23 @@ public class NovaUtils {
     }
 
     // 🔹 Open App
-    public void openApp(String packageName) {
+    public String openApp(String packageName) {
+        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
+        if (launchIntent == null) {
+            return "App not found";
+        }
+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) { // Android 11+
             startService(packageName, 0, 0, "open_app");
-        } else {
-            Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
-            if (launchIntent != null) {
-                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(launchIntent);
-            } else {
-                Toast.makeText(context, "App not found", Toast.LENGTH_SHORT).show();
-            }
+            return "Ongoing";
         }
+
+        Command.registerReceiverService(context);
+
+        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(launchIntent);
+
+        return "Success";
     }
 
     public boolean callContact(String phoneNumber) {
@@ -246,5 +252,12 @@ public class NovaUtils {
         } catch (Exception e) {
             Toast.makeText(context, "WhatsApp not installed!", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void sendBroadcast(String action, boolean data) {
+        Intent intent = new Intent();
+        intent.setAction(action);
+        intent.putExtra("isSuccess", data);
+        context.sendBroadcast(intent);
     }
 }
