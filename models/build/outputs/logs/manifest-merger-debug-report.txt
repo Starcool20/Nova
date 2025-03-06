@@ -1,16 +1,16 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest17629227828680611409.xml:2:13-83
-INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest17629227828680611409.xml:2:13-83
+ADDED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13236163374555200660.xml:2:13-83
+INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13236163374555200660.xml:2:13-83
 	package
-		INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest17629227828680611409.xml
+		INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13236163374555200660.xml
 	xmlns:android
-		ADDED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest17629227828680611409.xml:2:23-81
+		ADDED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13236163374555200660.xml:2:23-81
 uses-sdk
-INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest17629227828680611409.xml reason: use-sdk injection requested
-INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest17629227828680611409.xml
-INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest17629227828680611409.xml
+INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13236163374555200660.xml reason: use-sdk injection requested
+INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13236163374555200660.xml
+INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13236163374555200660.xml
 	android:targetSdkVersion
-		INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest17629227828680611409.xml
+		INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13236163374555200660.xml
 	android:minSdkVersion
-		INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest17629227828680611409.xml
+		INJECTED from C:\Users\HomePC\AndroidStudioProjects\Nova\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest13236163374555200660.xml

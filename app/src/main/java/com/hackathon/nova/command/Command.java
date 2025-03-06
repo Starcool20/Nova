@@ -12,37 +12,41 @@ import androidx.core.content.ContextCompat;
 import com.hackathon.nova.overlay.OverlayWindow;
 import com.hackathon.nova.util.NovaUtils;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 public class Command {
     private static BroadcastReceiver myReceiver;
 
-    public static void execute(Context context, String command) {
-        final String commands = command.toLowerCase();
+    public static void execute(Context context, String command, JSONObject jsonObject) {
+        Log.d("Command", "Executing command: " + command);
+        Log.d("Command", "JSON Object: " + jsonObject.toString());
+
         final NovaUtils novaUtils = new NovaUtils(context);
 
         if (command.startsWith("open")) {
-            String msg = novaUtils.openApp(command.substring(5).trim());
+            String msg = novaUtils.openApp(jsonObject.optString("packageName"));
             if (!msg.equals("Ongoing")) {
                 getSpeech(context, msg);
             }
-        } else if (commands.startsWith("call")) {
+        } else if (command.startsWith("call")) {
 
-        } else if (commands.startsWith("set alarm")) {
+        } else if (command.startsWith("set alarm")) {
 
-        } else if (commands.startsWith("play")) {
+        } else if (command.startsWith("play")) {
 
-        } else if (commands.startsWith("send message")) {
+        } else if (command.startsWith("send message")) {
 
-        } else if (commands.startsWith("add event")) {
+        } else if (command.startsWith("add event")) {
 
-        } else if (commands.startsWith("go home")) {
+        } else if (command.startsWith("go home")) {
 
-        } else if (commands.startsWith("check")) {
+        } else if (command.startsWith("check")) {
             performCheckOperation(command);
-        } else if (commands.startsWith("on")) {
+        } else if (command.startsWith("on")) {
 
-        } else if (commands.startsWith("off")) {
+        } else if (command.startsWith("off")) {
 
         }
     }

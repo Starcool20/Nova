@@ -45,6 +45,7 @@ dependencies {
     implementation libs.androidx.sqlite.framework
     implementation libs.vosk.android
     implementation libs.androidx.preference
+    implementation libs.logging.interceptor // Add this
     implementation project(':models')
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit

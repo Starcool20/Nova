@@ -330,12 +330,13 @@ public class VoiceRecognizer implements RecognitionListener {
 
         try {
             JSONObject jsonObject = new JSONObject(response.body().string());
-            String command = jsonObject.getString("transcript");
+            String transcript = jsonObject.getString("transcript");
             String responseText = jsonObject.getString("response");
+            String command = jsonObject.getString("command");
 
-            saveTranscriptAndResponse(command, responseText);
+            saveTranscriptAndResponse(transcript, responseText);
 
-            Command.execute(context, command);
+            Command.execute(context, command, jsonObject);
         } catch (Exception e) {
             Log.e("VoiceRecognizer", "Error processing response: " + e.getMessage(), e);
             OverlayWindow.showError();

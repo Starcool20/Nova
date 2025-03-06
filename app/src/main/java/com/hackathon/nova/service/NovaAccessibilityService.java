@@ -47,7 +47,7 @@ public class NovaAccessibilityService extends AccessibilityService {
         StringBuilder sb = new StringBuilder();
         for (String app : allApps) {
             Log.d("Installed Apps", app);
-            sb.append("Package Name = ").append(app);
+            sb.append(app).append("\n");
         }
 
         databaseHelper.insertData(sb.toString(), "installed_apps");
