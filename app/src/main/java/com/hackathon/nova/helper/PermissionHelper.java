@@ -26,4 +26,14 @@ public class PermissionHelper {
         }
     }
 
+    public static boolean checkContactListPermission(Activity context) {
+        // Check & request permissions
+        return context.checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static void requestContactListPermission(Activity context, int REQUEST_CONTACTS_PERMISSION) {
+        // Check & request permissions
+        context.requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, REQUEST_CONTACTS_PERMISSION);
+    }
+
 }

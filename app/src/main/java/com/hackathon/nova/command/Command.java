@@ -21,24 +21,28 @@ public class Command {
 
     public static void execute(Context context, String command, JSONObject jsonObject) {
         Log.d("Command", "Executing command: " + command);
-        Log.d("Command", "JSON Object: " + jsonObject.toString());
 
         final NovaUtils novaUtils = new NovaUtils(context);
 
         if (command.startsWith("open")) {
             String msg = novaUtils.openApp(jsonObject.optString("packageName"));
             if (!msg.equals("Ongoing")) {
+                OverlayWindow.destroy();
                 getSpeech(context, msg);
             }
         } else if (command.startsWith("call")) {
 
-        } else if (command.startsWith("set alarm")) {
+        } else if (command.startsWith("set")) {
 
         } else if (command.startsWith("play")) {
 
-        } else if (command.startsWith("send message")) {
+        } else if (command.startsWith("send")) {
 
-        } else if (command.startsWith("add event")) {
+        } else if (command.startsWith("email")) {
+
+        } else if (command.startsWith("whatsapp")) {
+
+        } else if (command.startsWith("telegram")) {
 
         } else if (command.startsWith("go home")) {
 
