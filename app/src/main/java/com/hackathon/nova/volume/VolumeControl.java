@@ -16,11 +16,19 @@ public class VolumeControl {
 
     public static void setStreamMusicVolume(int volume, Context context) {
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0);
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_SHOW_UI);
+    }
+
+    public static void setFullVolume(Context context) {
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        if (audioManager != null) {
+            int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, AudioManager.FLAG_SHOW_UI);
+        }
     }
 
     public static void setVolumeToHalf(Context context) {
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, getStreamMusicVolume(context) / 2, 0);
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, getStreamMusicVolume(context) / 2, AudioManager.FLAG_SHOW_UI);
     }
 }

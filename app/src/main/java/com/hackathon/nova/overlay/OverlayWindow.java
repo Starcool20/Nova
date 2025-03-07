@@ -47,6 +47,7 @@ public class OverlayWindow {
     private static boolean stopAnimation = false;
     private static Handler handler;
     private static Runnable animatorRunnable;
+    private static boolean isDestroyed = false;
 
     public OverlayWindow(Context context) {
         windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -117,6 +118,7 @@ public class OverlayWindow {
                             i.setText("g");
                             j.setText("");
                             VoiceRecognizer.startListening();
+                            isDestroyed = false;
                         }
                     }
 
@@ -148,6 +150,8 @@ public class OverlayWindow {
     }
 
     public static void destroy() {
+        if (isDestroyed) return;
+        isDestroyed = true;
         removeText();
         stopAnimation = true;
         showViewWithAnim(1f, 0f);
@@ -220,6 +224,8 @@ public class OverlayWindow {
     }
 
     public static void showError() {
+        if (isDestroyed) return;
+        isDestroyed = true;
         a.setText("E");
         b.setText("r");
         c.setText("r");

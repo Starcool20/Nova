@@ -212,7 +212,7 @@ public class NovaUtils {
         BatteryManager batteryManager = (BatteryManager) context.getSystemService(Context.BATTERY_SERVICE);
         if (batteryManager != null) {
             int batteryLevel = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-            return "Battery Level: " + batteryLevel + "%";
+            return "Battery Level Is: " + batteryLevel + "%";
         } else {
             return "Battery info not available";
         }

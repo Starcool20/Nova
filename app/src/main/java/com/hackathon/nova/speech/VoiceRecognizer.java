@@ -248,6 +248,7 @@ public class VoiceRecognizer implements RecognitionListener {
                             String contentType = response.headers().get("Content-Type");
 
                             if (contentType != null) {
+                                VolumeControl.setFullVolume(context);
                                 if (contentType.contains("application/json")) {
                                     OverlayWindow.initiate();
                                     processJsonOutput(response);

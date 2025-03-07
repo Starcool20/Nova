@@ -73,11 +73,16 @@ public class Command {
                 getSpeech(context, msg3);
             }
         } else if (command.contains("send")) {
-            String phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
-            Log.d("Command", "Phone Number: " + phoneNumber);
-            if (phoneNumber.equals("Contact Not Found")) {
-                getSpeech(context, "Contact Not Found");
-                return;
+            String phoneNumber = "";
+            if (!jsonObject.optBoolean("isNumeric")) {
+                phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
+                Log.d("Command", "Phone Number: " + phoneNumber);
+                if (phoneNumber.equals("Contact Not Found")) {
+                    getSpeech(context, "Contact Not Found");
+                    return;
+                }
+            } else {
+                phoneNumber = jsonObject.optString("contactName");
             }
 
             String msg4 = novaUtils.sendSMS(phoneNumber, jsonObject.optString("message"));
@@ -93,22 +98,37 @@ public class Command {
                 getSpeech(context, msg5);
             }
         } else if (command.contains("whatsapp")) {
-            String phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
-            if (phoneNumber.equals("Contact Not Found")) {
-                getSpeech(context, "Contact Not Found");
-                return;
+            String phoneNumber = "";
+            if (!jsonObject.optBoolean("isNumeric")) {
+                phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
+                Log.d("Command", phoneNumber);
+                if (phoneNumber.equals("Contact Not Found")) {
+                    OverlayWindow.destroy();
+                    getSpeech(context, "Contact Not Found");
+                    return;
+                }
+            } else {
+                phoneNumber = jsonObject.optString("contactName");
             }
 
             String msg6 = novaUtils.sendMessageToWhatsApp(phoneNumber, jsonObject.optString("message"));
+            Log.d("Command", msg6);
             if (!msg6.equals("Pending")) {
                 OverlayWindow.destroy();
                 getSpeech(context, msg6);
             }
         } else if (command.contains("telegram")) {
-            String phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
-            if (phoneNumber.equals("Contact Not Found")) {
-                getSpeech(context, "Contact Not Found");
-                return;
+            String phoneNumber = "";
+            if (!jsonObject.optBoolean("isNumeric")) {
+                phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
+                Log.d("Command", phoneNumber);
+                if (phoneNumber.equals("Contact Not Found")) {
+                    OverlayWindow.destroy();
+                    getSpeech(context, "Contact Not Found");
+                    return;
+                }
+            } else {
+                phoneNumber = jsonObject.optString("contactName");
             }
 
             String msg7 = novaUtils.sendMessageToTelegram(phoneNumber, jsonObject.optString("message"));
@@ -120,7 +140,7 @@ public class Command {
             new NovaAccessibilityService().goHome();
             Log.d("Command", "Going Home");
         } else if (command.contains("check")) {
-            performCheckOperation(context, command, novaUtils, jsonObject);
+            performCheckOperation(context, jsonObject.optString("checkCommand"), novaUtils, jsonObject);
         } else {
             Log.d("Command", "Unknown command: " + command);
         }
@@ -130,7 +150,7 @@ public class Command {
         switch (command) {
             case "battery percentage":
                 String batteryInfo = novaUtils.checkBattery();
-                getSpeech(context, batteryInfo);
+                generateAudioFile(context, batteryInfo);
                 break;
             case "storage":
                 String storageInfo = novaUtils.checkStorage();
