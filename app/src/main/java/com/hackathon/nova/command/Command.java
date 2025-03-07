@@ -34,6 +34,7 @@ import retrofit2.Retrofit;
 public class Command {
     private static BroadcastReceiver myReceiver;
     private static Call<ResponseBody> call;
+    private static boolean isRegistered = false;
 
     public static void execute(Context context, String command, JSONObject jsonObject) {
         Log.d("Command", "Executing command: " + command);
@@ -196,10 +197,12 @@ public class Command {
         // Register the receiver
         IntentFilter filter = new IntentFilter("com.hackathon.nova.COMMAND_FOREGROUND_SERVICE");
         ContextCompat.registerReceiver(context, myReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
+        isRegistered = true;
     }
 
     public static void unRegisterReceiver(Context context) {
-        if (myReceiver != null) {
+        if (myReceiver != null && isRegistered) {
+            isRegistered = false;
             context.unregisterReceiver(myReceiver);
             myReceiver = null;
         }
