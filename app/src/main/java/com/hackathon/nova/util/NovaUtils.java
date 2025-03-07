@@ -70,6 +70,7 @@ public class NovaUtils {
         }
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) { // Android 11+
+            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startService(launchIntent, "open_app");
             return "Pending";
         }
@@ -108,6 +109,7 @@ public class NovaUtils {
         intent.putExtra(AlarmClock.EXTRA_MESSAGE, message);
         intent.putExtra(AlarmClock.EXTRA_HOUR, hour);
         intent.putExtra(AlarmClock.EXTRA_MINUTES, minute);
+        intent.putExtra(AlarmClock.EXTRA_SKIP_UI, true); // Skip UI if possible
 
         // Check if there's an app that can handle the intent
         if (intent.resolveActivity(context.getPackageManager()) == null) {
@@ -401,13 +403,5 @@ public class NovaUtils {
             return "Failed";
         }
         return "Success";
-    }
-
-
-    private void sendBroadcast(String action, boolean data) {
-        Intent intent = new Intent();
-        intent.setAction(action);
-        intent.putExtra("isSuccess", data);
-        context.sendBroadcast(intent);
     }
 }

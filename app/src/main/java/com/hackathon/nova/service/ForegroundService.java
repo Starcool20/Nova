@@ -7,6 +7,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -37,11 +38,25 @@ public class ForegroundService extends Service {
 
         // TODO: Your service logic here (e.g., playing music, tracking location)
 
-        startActivity(intent2);
+        try {
+            startActivity(intent2);
+            sendBroadcast(true, "SUCCESS");
+        } catch (Exception e) {
+            Log.d("Nova", "onStartCommand: " + e.getMessage());
+            sendBroadcast(false, e.getMessage());
+        }
 
         stopMyService();
 
         return START_STICKY;
+    }
+
+    private void sendBroadcast(boolean data, String text) {
+        Intent intent = new Intent();
+        intent.setAction("com.hackathon.nova.COMMAND_FOREGROUND_SERVICE");
+        intent.putExtra("ISSUCCESS", data);
+        intent.putExtra("MESSAGE", text);
+        sendBroadcast(intent);
     }
 
     @Override
