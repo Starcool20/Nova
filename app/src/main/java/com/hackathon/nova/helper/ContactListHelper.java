@@ -10,9 +10,30 @@ import java.util.List;
 
 public class ContactListHelper {
 
-    private List<String> fetchContacts(Context context) {
-        final List<String> contactList = new ArrayList<>();
+    public static String fetchContactByName(Context context, String targetName) {
+        ContentResolver contentResolver = context.getContentResolver();
 
+        Cursor cursor = contentResolver.query(
+                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                new String[]{ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER},
+                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " = ?",
+                new String[]{targetName},
+                null
+        );
+
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                String phoneNumber = cursor.getString(1); // Get phone number
+                cursor.close();
+                return phoneNumber;
+            }
+            cursor.close();
+        }
+        return "Contact Not Found";
+    }
+
+    public static List<String> fetchContacts(Context context) {
+        List<String> contactList = new ArrayList<>();
         ContentResolver contentResolver = context.getContentResolver();
         Cursor cursor = contentResolver.query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
@@ -23,7 +44,7 @@ public class ContactListHelper {
             while (cursor.moveToNext()) {
                 String name = cursor.getString(0);
                 String phone = cursor.getString(1);
-                contactList.add(name + " - " + phone);
+                contactList.add("CONTACT_NAME = " + name);
             }
             cursor.close();
         }

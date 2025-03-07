@@ -1,7 +1,9 @@
 package com.hackathon.nova.util;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.app.SearchManager;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -16,16 +18,24 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
+import android.os.Vibrator;
+import android.os.VibratorManager;
 import android.provider.AlarmClock;
 import android.provider.MediaStore;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.hackathon.nova.command.Command;
+import com.hackathon.nova.helper.PermissionHelper;
 import com.hackathon.nova.service.ForegroundService;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class NovaUtils {
     private static final int REQUEST_PERMISSION = 1;
@@ -74,16 +84,16 @@ public class NovaUtils {
         return "Success";
     }
 
-    public boolean callContact(String phoneNumber) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+    public String callContact(String phoneNumber) {
+        if (!PermissionHelper.isCallPermissionGranted(context)) {
             Toast.makeText(context, "Call permission needed", Toast.LENGTH_SHORT).show();
-            return false;
+            return "Call permission needed";
         }
 
         final Intent intent2 = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + phoneNumber));
         if (intent2.resolveActivity(context.getPackageManager()) == null) {
             Toast.makeText(context, "No app found to make a call", Toast.LENGTH_SHORT).show();
-            return false;
+            return "No app found to make a call";
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -91,11 +101,11 @@ public class NovaUtils {
         } else {
             context.startActivity(intent2);
         }
-        return true;
+        return "Success";
     }
 
 
-    public boolean setAlarm(String message, int hour, int minute) {
+    public String setAlarm(String message, int hour, int minute) {
         Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM);
         intent.putExtra(AlarmClock.EXTRA_MESSAGE, message);
         intent.putExtra(AlarmClock.EXTRA_HOUR, hour);
@@ -104,7 +114,7 @@ public class NovaUtils {
         // Check if there's an app that can handle the intent
         if (intent.resolveActivity(context.getPackageManager()) == null) {
             Toast.makeText(context, "No app found to set an alarm", Toast.LENGTH_SHORT).show();
-            return false;
+            return "No app found to set an alarm";
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -114,15 +124,15 @@ public class NovaUtils {
                 context.startActivity(intent);
             } catch (Exception e) {
                 Toast.makeText(context, "Failed to set alarm: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                return false;
+                return "Failed to set alarm";
             }
         }
-        return true;
+        return "Success";
     }
 
 
     // 🔹 Play Song
-    public boolean playSong(String songName) {
+    public String playSong(String songName) {
         Intent intent = new Intent(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH);
         intent.putExtra(MediaStore.EXTRA_MEDIA_FOCUS, MediaStore.Audio.Media.TITLE);
         intent.putExtra(SearchManager.QUERY, songName);
@@ -130,7 +140,7 @@ public class NovaUtils {
         // Check if any app can handle the intent
         if (intent.resolveActivity(context.getPackageManager()) == null) {
             Toast.makeText(context, "No app found to play the song", Toast.LENGTH_SHORT).show();
-            return false;
+            return "No app found to play the song";
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -140,20 +150,20 @@ public class NovaUtils {
                 context.startActivity(Intent.createChooser(intent, "Select a Music Player"));
             } catch (Exception e) {
                 Toast.makeText(context, "Failed to play song: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                return false;
+                return "Failed to play song";
             }
         }
-        return true;
+        return "Success";
     }
 
 
-    public boolean sendSMS(String phoneNumber, String message) {
+    public String sendSMS(String phoneNumber, String message) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse("smsto:" + phoneNumber));
         intent.putExtra("sms_body", message);
         if (intent.resolveActivity(context.getPackageManager()) == null) {
             Toast.makeText(context, "No SMS app found!", Toast.LENGTH_SHORT).show();
-            return false;
+            return "No SMS app found!";
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startService(message, 0, 0, "send_sms");
@@ -162,11 +172,29 @@ public class NovaUtils {
                 context.startActivity(intent);
             } catch (Exception e) {
                 Toast.makeText(context, "Failed to send SMS: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                return false;
+                return "Failed to send SMS";
             }
         }
-        return true;
+        return "Success";
     }
+
+    public String sendEmail(Context context, String toEmail, String subject, String message) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("message/rfc822");
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{toEmail});
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        intent.putExtra(Intent.EXTRA_TEXT, message);
+        intent.setPackage("com.google.android.gm"); // Opens Gmail specifically
+
+        try {
+            context.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(context, "Gmail app not installed!", Toast.LENGTH_SHORT).show();
+            return "Gmail app not installed!";
+        }
+        return "Success";
+    }
+
 
 
     public String checkBattery() {
@@ -192,10 +220,20 @@ public class NovaUtils {
     }
 
 
-    // 🔹 Check RAM
-    public String checkRAM() {
-        return "RAM information is not directly accessible in newer Android versions.";
+    public String getRAMInfo() {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (activityManager != null) {
+            ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
+            activityManager.getMemoryInfo(memoryInfo);
+
+            long totalRam = memoryInfo.totalMem / (1024 * 1024); // Convert to MB
+            long availableRam = memoryInfo.availMem / (1024 * 1024); // Convert to MB
+
+            return "Total RAM: " + totalRam + " MB\nAvailable RAM: " + availableRam + " MB";
+        }
+        return "RAM info not available";
     }
+
 
     // 🔹 Check Location
     public String checkLocation() {
@@ -212,47 +250,154 @@ public class NovaUtils {
         }
     }
 
-    // 🔹 Check Internet (Works on API 21 to 36)
     public String checkInternet() {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
         if (cm == null) return "No internet connection";
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            // ✅ Android 6+ (API 23+): Use getNetworkCapabilities()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // ✅ Android 6+ (API 23+): Use NetworkCapabilities
             Network network = cm.getActiveNetwork();
             if (network == null) return "No internet connection";
 
             NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
             if (capabilities == null) return "No internet connection";
 
-            if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
-                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-                return "Internet is available";
+            if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                return "Connected to Wi-Fi";
+            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+                return "Connected to Mobile Data";
+            } else if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+                return "Connected to Ethernet";
             }
         } else {
-            // ✅ Android 5 (API 21-22): Use the old method
+            // ✅ Android 5 (API 21-22): Use NetworkInfo (deprecated in API 29)
             NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
             if (activeNetwork != null && activeNetwork.isConnected()) {
-                return "Internet is available";
+                if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
+                    return "Connected to Wi-Fi";
+                } else if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
+                    return "Connected to Mobile Data";
+                } else if (activeNetwork.getType() == ConnectivityManager.TYPE_ETHERNET) {
+                    return "Connected to Ethernet";
+                }
             }
         }
 
         return "No internet connection";
     }
 
-    public void sendMessageToWhatsApp(String phoneNumber, String message) {
+    public boolean isInternetAvailable() {
         try {
+            InetAddress address = InetAddress.getByName("google.com");
+            return !address.equals("");
+        } catch (UnknownHostException e) {
+            return false;
+        }
+    }
+
+
+    public String sendMessageToWhatsApp(String phoneNumber, String message) {
+        PackageManager packageManager = context.getPackageManager();
+        try {
+            // Check if WhatsApp is installed
             Intent intent = new Intent(Intent.ACTION_VIEW);
             String url = "https://wa.me/" + phoneNumber + "?text=" + Uri.encode(message);
             intent.setData(Uri.parse(url));
-            intent.setPackage("com.whatsapp");
+
+            if (isAppInstalled("com.whatsapp", packageManager)) {
+                intent.setPackage("com.whatsapp"); // Use WhatsApp
+            } else if (isAppInstalled("com.whatsapp.w4b", packageManager)) {
+                intent.setPackage("com.whatsapp.w4b"); // Use WhatsApp Business
+            } else {
+                return "WhatsApp is not installed!";
+            }
+
             context.startActivity(intent);
+            return "Success";
         } catch (Exception e) {
-            Toast.makeText(context, "WhatsApp not installed!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Failed to open WhatsApp: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            return "Failed";
         }
     }
+
+
+    public String sendMessageToTelegram(String phoneNumber, String message) {
+        PackageManager packageManager = context.getPackageManager();
+        try {
+            // Convert phone number to international format (ensure it starts with +)
+            if (!phoneNumber.startsWith("+")) {
+                phoneNumber = "+" + phoneNumber;
+            }
+
+            // Encode the message properly
+            String url = "https://t.me/" + phoneNumber + "?text=" + Uri.encode(message);
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+
+            // Check if Telegram or Telegram X is installed
+            if (isAppInstalled("org.telegram.messenger", packageManager)) {
+                intent.setPackage("org.telegram.messenger"); // Telegram app
+            } else if (isAppInstalled("org.thunderdog.challegram", packageManager)) {
+                intent.setPackage("org.thunderdog.challegram"); // Telegram X
+            } else {
+                return "Telegram is not installed!";
+            }
+
+            context.startActivity(intent);
+            return "Success";
+        } catch (Exception e) {
+            return "Failed";
+        }
+    }
+
+    // Helper method to check if an app is installed
+    private boolean isAppInstalled(String packageName, PackageManager packageManager) {
+        try {
+            packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
+    public String isVibrationWorking(Context context) {
+        Vibrator vibrator;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Android 12+ (API 31+): Use VibratorManager
+            VibratorManager vibratorManager = (VibratorManager) context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+            vibrator = vibratorManager.getDefaultVibrator();
+        } else {
+            // Older versions (API 21-30)
+            vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        }
+
+        if (vibrator == null || !vibrator.hasVibrator()) {
+            return "Vibration NOT supported on this device.";
+        }
+
+        return "Vibration is available!";
+    }
+
+    public String getPrimaryLanguage(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return context.getResources().getConfiguration().getLocales().get(0).getLanguage();
+        } else {
+            return context.getResources().getConfiguration().locale.getLanguage();
+        }
+    }
+
+    public String setBrightness(AppCompatActivity activity, float brightness) {
+        try {
+            Window window = activity.getWindow();
+            WindowManager.LayoutParams layoutParams = window.getAttributes();
+            layoutParams.screenBrightness = brightness; // Value between 0.0 and 1.0
+            window.setAttributes(layoutParams);
+        } catch (Exception e) {
+            return "Failed";
+        }
+        return "Success";
+    }
+
 
     private void sendBroadcast(String action, boolean data) {
         Intent intent = new Intent();

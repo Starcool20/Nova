@@ -206,6 +206,7 @@ public class VoiceRecognizer implements RecognitionListener {
         jsonObject.addProperty("user9", "");
         jsonObject.addProperty("user9_response", "");
         jsonObject.addProperty("installed_apps", "");
+        jsonObject.addProperty("contact_list", "");
         jsonObject.addProperty("date", DateTimeHelper.getCurrentDate());
         jsonObject.addProperty("time", DateTimeHelper.getCurrentTime());
 
@@ -222,6 +223,10 @@ public class VoiceRecognizer implements RecognitionListener {
 
                 if (data.getKey().equals("installed_apps")) {
                     jsonObject.addProperty("installed_apps", data.getName());
+                }
+
+                if (data.getKey().equals("contact_list")) {
+                    jsonObject.addProperty("contact_list", data.getName());
                 }
             }
             jsonObject.addProperty("count", String.valueOf(dataList.size()));

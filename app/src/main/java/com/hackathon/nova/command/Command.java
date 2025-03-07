@@ -9,8 +9,11 @@ import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
+import com.hackathon.nova.helper.ContactListHelper;
 import com.hackathon.nova.overlay.OverlayWindow;
+import com.hackathon.nova.service.NovaAccessibilityService;
 import com.hackathon.nova.util.NovaUtils;
+import com.hackathon.nova.volume.VolumeControl;
 
 import org.json.JSONObject;
 
@@ -30,70 +33,108 @@ public class Command {
                 OverlayWindow.destroy();
                 getSpeech(context, msg);
             }
+
         } else if (command.startsWith("call")) {
-
+            String phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
+            if (phoneNumber.equals("Contact Not Found")) {
+                getSpeech(context, "Contact Not Found");
+                return;
+            }
+            String msg2 = novaUtils.callContact(phoneNumber);
+            getSpeech(context, msg2);
         } else if (command.startsWith("set")) {
-
+            String msg2 = novaUtils.setAlarm("NOVA ALARM", jsonObject.optInt("hour"), jsonObject.optInt("minutes"));
+            getSpeech(context, msg2);
         } else if (command.startsWith("play")) {
-
+            String msg3 = novaUtils.playSong(jsonObject.optString("songName"));
+            getSpeech(context, msg3);
         } else if (command.startsWith("send")) {
+            String phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
+            if (phoneNumber.equals("Contact Not Found")) {
+                getSpeech(context, "Contact Not Found");
+                return;
+            }
 
+            String msg4 = novaUtils.sendSMS(phoneNumber, jsonObject.optString("message"));
+            getSpeech(context, msg4);
         } else if (command.startsWith("email")) {
-
+            String msg5 = novaUtils.sendEmail(context, jsonObject.optString("gmail"), "", jsonObject.optString("message"));
         } else if (command.startsWith("whatsapp")) {
+            String phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
+            if (phoneNumber.equals("Contact Not Found")) {
+                getSpeech(context, "Contact Not Found");
+                return;
+            }
 
+            String msg6 = novaUtils.sendMessageToWhatsApp(phoneNumber, jsonObject.optString("message"));
+            getSpeech(context, msg6);
         } else if (command.startsWith("telegram")) {
+            String phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
+            if (phoneNumber.equals("Contact Not Found")) {
+                getSpeech(context, "Contact Not Found");
+                return;
+            }
 
-        } else if (command.startsWith("go home")) {
-
-        } else if (command.startsWith("check")) {
-            performCheckOperation(command);
-        } else if (command.startsWith("on")) {
-
-        } else if (command.startsWith("off")) {
+            String msg7 = novaUtils.sendMessageToTelegram(phoneNumber, jsonObject.optString("message"));
+            getSpeech(context, msg7);
+        } else if (command.contentEquals("go")) {
+            new NovaAccessibilityService().goHome();
+            Log.d("Command", "Going Home");
+        } else if (command.contentEquals("check")) {
+            performCheckOperation(context, command, novaUtils, jsonObject);
+        } else {
 
         }
+
+        OverlayWindow.destroy();
     }
 
-    private static void performCheckOperation(String command) {
-        String words = command.substring(5).toLowerCase();
-
-        switch (words) {
+    private static void performCheckOperation(Context context, String command, NovaUtils novaUtils, JSONObject js) {
+        switch (command) {
             case "battery percentage":
-
+                String batteryInfo = novaUtils.checkBattery();
+                getSpeech(context, batteryInfo);
                 break;
             case "storage":
-
+                String storageInfo = novaUtils.checkStorage();
+                getSpeech(context, storageInfo);
                 break;
             case "ram":
-
+                String ramInfo = novaUtils.getRAMInfo();
+                getSpeech(context, ramInfo);
                 break;
             case "location":
-
-                break;
-            case "wifi":
-
+                String locationInfo = novaUtils.checkLocation();
+                getSpeech(context, locationInfo);
                 break;
             case "internet":
-
+                String internetInfo = novaUtils.checkInternet();
+                if (novaUtils.isInternetAvailable()) {
+                    internetInfo = "Connected to Internet";
+                } else {
+                    internetInfo = "No internet connection";
+                }
+                getSpeech(context, internetInfo);
                 break;
             case "speaker":
-
+                String speakerInfo = "If you can hear me then speaker is working correctly";
+                getSpeech(context, speakerInfo);
                 break;
             case "microphone":
-
+                String microphoneInfo = "Microphone is working correctly";
+                getSpeech(context, microphoneInfo);
                 break;
             case "vibration":
-
+                String vibrationInfo = novaUtils.isVibrationWorking(context);
+                getSpeech(context, vibrationInfo);
                 break;
             case "language":
-
-                break;
-            case "brightness":
-
+                String languageInfo = novaUtils.getPrimaryLanguage(context);
+                getSpeech(context, languageInfo);
                 break;
             case "volume":
-
+                VolumeControl.setStreamMusicVolume(js.optInt("volume"), context);
+                getSpeech(context, "Volume set to " + js.optInt("volume"));
                 break;
             case "weather":
 
