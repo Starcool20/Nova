@@ -204,7 +204,7 @@ public class Command {
             myReceiver = null;
         }
 
-        cancelNetworkRequest();
+
     }
 
     private static void cancelNetworkRequest() {
