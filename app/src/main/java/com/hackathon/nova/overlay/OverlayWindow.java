@@ -224,8 +224,6 @@ public class OverlayWindow {
     }
 
     public static void showError() {
-        if (isDestroyed) return;
-        isDestroyed = true;
         a.setText("E");
         b.setText("r");
         c.setText("r");
