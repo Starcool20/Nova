@@ -71,11 +71,10 @@ public class NovaUtils {
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) { // Android 11+
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            Command.registerReceiverService(context);
             startService(launchIntent, "open_app");
             return "Pending";
         }
-
-        Command.registerReceiverService(context);
 
         launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(launchIntent);
@@ -96,6 +95,7 @@ public class NovaUtils {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Command.registerReceiverService(context);
             startService(intent2, "call_contact");
             return "Pending";
         }
@@ -118,6 +118,7 @@ public class NovaUtils {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Command.registerReceiverService(context);
             startService(intent, "set_alarm");
             return "Pending";
         }
@@ -145,6 +146,7 @@ public class NovaUtils {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Command.registerReceiverService(context);
             startService(intent, "play_song");
             return "Pending";
         }
@@ -167,6 +169,7 @@ public class NovaUtils {
             return "No SMS app found!";
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Command.registerReceiverService(context);
             startService(intent, "send_sms");
             return "Pending";
         }
@@ -189,6 +192,7 @@ public class NovaUtils {
         intent.setPackage("com.google.android.gm"); // Opens Gmail specifically
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Command.registerReceiverService(context);
             startService(intent, "send_sms");
             return "Pending";
         }
