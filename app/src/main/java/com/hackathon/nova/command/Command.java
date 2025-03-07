@@ -27,14 +27,14 @@ public class Command {
 
         final NovaUtils novaUtils = new NovaUtils(context);
 
-        if (command.startsWith("open")) {
+        if (command.contains("open")) {
             String msg = novaUtils.openApp(jsonObject.optString("packageName"));
             if (!msg.equals("Ongoing")) {
                 OverlayWindow.destroy();
                 getSpeech(context, msg);
             }
 
-        } else if (command.startsWith("call")) {
+        } else if (command.contains("call")) {
             String phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
             if (phoneNumber.equals("Contact Not Found")) {
                 getSpeech(context, "Contact Not Found");
@@ -42,24 +42,26 @@ public class Command {
             }
             String msg2 = novaUtils.callContact(phoneNumber);
             getSpeech(context, msg2);
-        } else if (command.startsWith("set")) {
+        } else if (command.contains("set")) {
             String msg2 = novaUtils.setAlarm("NOVA ALARM", jsonObject.optInt("hour"), jsonObject.optInt("minutes"));
             getSpeech(context, msg2);
-        } else if (command.startsWith("play")) {
+        } else if (command.contains("play")) {
             String msg3 = novaUtils.playSong(jsonObject.optString("songName"));
             getSpeech(context, msg3);
-        } else if (command.startsWith("send")) {
+        } else if (command.contains("send")) {
             String phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
+            Log.d("Command", "Phone Number: " + phoneNumber);
             if (phoneNumber.equals("Contact Not Found")) {
                 getSpeech(context, "Contact Not Found");
                 return;
             }
 
             String msg4 = novaUtils.sendSMS(phoneNumber, jsonObject.optString("message"));
+            Log.d("Command", "Message: " + msg4);
             getSpeech(context, msg4);
-        } else if (command.startsWith("email")) {
+        } else if (command.contains("email")) {
             String msg5 = novaUtils.sendEmail(context, jsonObject.optString("gmail"), "", jsonObject.optString("message"));
-        } else if (command.startsWith("whatsapp")) {
+        } else if (command.contains("whatsapp")) {
             String phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
             if (phoneNumber.equals("Contact Not Found")) {
                 getSpeech(context, "Contact Not Found");
@@ -68,7 +70,7 @@ public class Command {
 
             String msg6 = novaUtils.sendMessageToWhatsApp(phoneNumber, jsonObject.optString("message"));
             getSpeech(context, msg6);
-        } else if (command.startsWith("telegram")) {
+        } else if (command.contentEquals("telegram")) {
             String phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
             if (phoneNumber.equals("Contact Not Found")) {
                 getSpeech(context, "Contact Not Found");
@@ -77,10 +79,10 @@ public class Command {
 
             String msg7 = novaUtils.sendMessageToTelegram(phoneNumber, jsonObject.optString("message"));
             getSpeech(context, msg7);
-        } else if (command.contentEquals("go")) {
+        } else if (command.contains("go")) {
             new NovaAccessibilityService().goHome();
             Log.d("Command", "Going Home");
-        } else if (command.contentEquals("check")) {
+        } else if (command.contains("check")) {
             performCheckOperation(context, command, novaUtils, jsonObject);
         } else {
             Log.d("Command", "Unknown command: " + command);

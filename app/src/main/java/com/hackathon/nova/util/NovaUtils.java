@@ -45,12 +45,10 @@ public class NovaUtils {
         this.context = context;
     }
 
-    public void startService(String packageName, int hour, int minutes, String type) {
+    public void startService(Intent intent, String type) {
         Intent serviceIntent = new Intent(context, ForegroundService.class);
-        serviceIntent.putExtra(ForegroundService.EXTRA_DATA, packageName);
+        serviceIntent.putExtra("INTENT", intent);
         serviceIntent.putExtra("TYPE", type);
-        serviceIntent.putExtra("HOUR", hour);
-        serviceIntent.putExtra("MINUTES", minutes);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(serviceIntent); // API 26+
@@ -72,8 +70,8 @@ public class NovaUtils {
         }
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) { // Android 11+
-            startService(packageName, 0, 0, "open_app");
-            return "Ongoing";
+            startService(launchIntent, "open_app");
+            return "Pending";
         }
 
         Command.registerReceiverService(context);
@@ -97,10 +95,10 @@ public class NovaUtils {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startService(phoneNumber, 0, 0, "call_contact");
-        } else {
-            context.startActivity(intent2);
+            startService(intent2, "call_contact");
+            return "Pending";
         }
+            context.startActivity(intent2);
         return "Success";
     }
 
@@ -118,15 +116,16 @@ public class NovaUtils {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startService(message, hour, minute, "set_alarm");
-        } else {
+            startService(intent, "set_alarm");
+            return "Pending";
+        }
+
             try {
                 context.startActivity(intent);
             } catch (Exception e) {
                 Toast.makeText(context, "Failed to set alarm: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 return "Failed to set alarm";
             }
-        }
         return "Success";
     }
 
@@ -144,15 +143,15 @@ public class NovaUtils {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startService(songName, 0, 0, "play_song");
-        } else {
+            startService(intent, "play_song");
+            return "Pending";
+        }
             try {
                 context.startActivity(Intent.createChooser(intent, "Select a Music Player"));
             } catch (Exception e) {
                 Toast.makeText(context, "Failed to play song: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 return "Failed to play song";
             }
-        }
         return "Success";
     }
 
@@ -166,15 +165,16 @@ public class NovaUtils {
             return "No SMS app found!";
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startService(message, 0, 0, "send_sms");
-        } else {
+            startService(intent, "send_sms");
+            return "Pending";
+        }
+
             try {
                 context.startActivity(intent);
             } catch (Exception e) {
                 Toast.makeText(context, "Failed to send SMS: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 return "Failed to send SMS";
             }
-        }
         return "Success";
     }
 
@@ -185,6 +185,11 @@ public class NovaUtils {
         intent.putExtra(Intent.EXTRA_SUBJECT, subject);
         intent.putExtra(Intent.EXTRA_TEXT, message);
         intent.setPackage("com.google.android.gm"); // Opens Gmail specifically
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startService(intent, "send_sms");
+            return "Pending";
+        }
 
         try {
             context.startActivity(intent);
