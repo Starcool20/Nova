@@ -204,12 +204,13 @@ public class Command {
             public void onReceive(Context context, Intent intent) {
                 if (intent.getBooleanExtra("ISSUCCESS", false)) {
                     String msg = intent.getStringExtra("MESSAGE");
-                    getSpeech(context, msg);
+                    //getSpeech(context, msg);
+                    OverlayWindow.destroy();
                 } else {
                     String msg = intent.getStringExtra("MESSAGE");
-                    getSpeech(context, msg);
+                    // getSpeech(context, msg);
+                    OverlayWindow.showError();
                 }
-                OverlayWindow.destroy();
             }
         };
 
