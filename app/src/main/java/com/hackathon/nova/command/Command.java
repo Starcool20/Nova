@@ -83,7 +83,7 @@ public class Command {
         } else if (command.contentEquals("check")) {
             performCheckOperation(context, command, novaUtils, jsonObject);
         } else {
-
+            Log.d("Command", "Unknown command: " + command);
         }
 
         OverlayWindow.destroy();
