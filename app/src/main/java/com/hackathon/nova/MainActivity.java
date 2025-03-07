@@ -85,23 +85,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        setup();
     }
 
     private void setup() {
         if (!PermissionHelper.isRecordAudioPermissionGranted(this)) {
             PermissionHelper.requestRecordAudioPermission(this, REQUEST_RECORD_AUDIO_PERMISSION);
-        } else if (!PermissionHelper.isAccessibilityServiceEnabled(this, NovaAccessibilityService.class)) {
-            PermissionHelper.requestAccessibilityPermission(this);
-        } else if (!PermissionHelper.isLocationPermissionGranted(MainActivity.this)) {
-            PermissionHelper.requestLocationPermission(MainActivity.this, STORAGE_PERMISSION);
         } else if (!PermissionHelper.hasContactListPermission(MainActivity.this)) {
             PermissionHelper.requestContactListPermission(MainActivity.this, CONTACT_PERMISSION);
         } else if (!PermissionHelper.isCallPermissionGranted(MainActivity.this)) {
             PermissionHelper.requestCallPermission(MainActivity.this, STORAGE_PERMISSION);
+        } else if (!PermissionHelper.isAccessibilityServiceEnabled(this, NovaAccessibilityService.class)) {
+            PermissionHelper.requestAccessibilityPermission(this);
+            Toast.makeText(this, "Please enable accessibility service for minito", Toast.LENGTH_SHORT).show();
         } else {
             Log.d("setup", "Done");
-            Toast.makeText(this, "Done", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please wait", Toast.LENGTH_SHORT).show();
             waitForListening();
         }
     }

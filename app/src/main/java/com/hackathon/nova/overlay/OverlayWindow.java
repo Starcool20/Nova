@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Handler;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -105,7 +106,11 @@ public class OverlayWindow {
                             if (windowManager != null) {
                                 startSpeechRecognizer = false;
                                 isWindowShowing = false;
-                                windowManager.removeView(OverlayView);
+                                try {
+                                    windowManager.removeViewImmediate(OverlayView);
+                                } catch (Exception ex) {
+                                    Log.d("OverlayWindow", ex.getMessage());
+                                }
                             }
                             a.setText("L");
                             b.setText("i");

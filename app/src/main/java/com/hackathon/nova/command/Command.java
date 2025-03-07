@@ -15,9 +15,7 @@ import com.hackathon.nova.api.client.RetrofitClient;
 import com.hackathon.nova.api.service.ApiService;
 import com.hackathon.nova.helper.ContactListHelper;
 import com.hackathon.nova.overlay.OverlayWindow;
-import com.hackathon.nova.service.NovaAccessibilityService;
 import com.hackathon.nova.util.NovaUtils;
-import com.hackathon.nova.volume.VolumeControl;
 
 import org.json.JSONObject;
 
@@ -46,31 +44,33 @@ public class Command {
             String msg = novaUtils.openApp(jsonObject.optString("packageName"));
             if (!msg.equals("Pending")) {
                 OverlayWindow.destroy();
-                getSpeech(context, msg);
             }
 
         } else if (command.contains("call")) {
-            String phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
-            if (phoneNumber.equals("Contact Not Found")) {
-                getSpeech(context, "Contact Not Found");
-                return;
+            String phoneNumber = "";
+            if (!jsonObject.optBoolean("isNumeric")) {
+                phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
+                if (phoneNumber.equals("Contact Not Found")) {
+                    OverlayWindow.destroy();
+                    showMessage("Contact Not Found", context);
+                    return;
+                }
+            } else {
+                phoneNumber = jsonObject.optString("contactName");
             }
             String msg2 = novaUtils.callContact(phoneNumber);
             if (!msg2.equals("Pending")) {
                 OverlayWindow.destroy();
-                getSpeech(context, msg2);
             }
         } else if (command.contains("set")) {
             String msg2 = novaUtils.setAlarm("NOVA ALARM", jsonObject.optInt("hour"), jsonObject.optInt("minutes"));
             if (!msg2.equals("Pending")) {
                 OverlayWindow.destroy();
-                getSpeech(context, msg2);
             }
         } else if (command.contains("play")) {
             String msg3 = novaUtils.playSong(jsonObject.optString("songName"));
             if (!msg3.equals("Pending")) {
                 OverlayWindow.destroy();
-                getSpeech(context, msg3);
             }
         } else if (command.contains("send")) {
             String phoneNumber = "";
@@ -78,7 +78,8 @@ public class Command {
                 phoneNumber = ContactListHelper.fetchContactByName(context, jsonObject.optString("contactName"));
                 Log.d("Command", "Phone Number: " + phoneNumber);
                 if (phoneNumber.equals("Contact Not Found")) {
-                    getSpeech(context, "Contact Not Found");
+                    OverlayWindow.destroy();
+                    showMessage("Contact Not Found", context);
                     return;
                 }
             } else {
@@ -89,13 +90,11 @@ public class Command {
             Log.d("Command", "Message: " + msg4);
             if (!msg4.equals("Pending")) {
                 OverlayWindow.destroy();
-                getSpeech(context, msg4);
             }
         } else if (command.contains("email")) {
             String msg5 = novaUtils.sendEmail(context, jsonObject.optString("gmail"), "", jsonObject.optString("message"));
             if (!msg5.equals("Pending")) {
                 OverlayWindow.destroy();
-                getSpeech(context, msg5);
             }
         } else if (command.contains("whatsapp")) {
             String phoneNumber = "";
@@ -104,7 +103,7 @@ public class Command {
                 Log.d("Command", phoneNumber);
                 if (phoneNumber.equals("Contact Not Found")) {
                     OverlayWindow.destroy();
-                    getSpeech(context, "Contact Not Found");
+                    showMessage("Contact Not Found", context);
                     return;
                 }
             } else {
@@ -115,7 +114,6 @@ public class Command {
             Log.d("Command", msg6);
             if (!msg6.equals("Pending")) {
                 OverlayWindow.destroy();
-                getSpeech(context, msg6);
             }
         } else if (command.contains("telegram")) {
             String phoneNumber = "";
@@ -124,7 +122,7 @@ public class Command {
                 Log.d("Command", phoneNumber);
                 if (phoneNumber.equals("Contact Not Found")) {
                     OverlayWindow.destroy();
-                    getSpeech(context, "Contact Not Found");
+                    showMessage("Contact Not Found", context);
                     return;
                 }
             } else {
@@ -134,15 +132,13 @@ public class Command {
             String msg7 = novaUtils.sendMessageToTelegram(phoneNumber, jsonObject.optString("message"));
             if (!msg7.equals("Pending")) {
                 OverlayWindow.destroy();
-                getSpeech(context, msg7);
             }
-        } else if (command.contains("go")) {
-            new NovaAccessibilityService().goHome();
-            Log.d("Command", "Going Home");
         } else if (command.contains("check")) {
             performCheckOperation(context, jsonObject.optString("checkCommand"), novaUtils, jsonObject);
         } else {
             Log.d("Command", "Unknown command: " + command);
+            OverlayWindow.showError();
+            showMessage("Unknown command: " + command, context);
         }
     }
 
@@ -154,15 +150,11 @@ public class Command {
                 break;
             case "storage":
                 String storageInfo = novaUtils.checkStorage();
-                getSpeech(context, storageInfo);
+                generateAudioFile(context, storageInfo);
                 break;
             case "ram":
                 String ramInfo = novaUtils.getRAMInfo();
-                getSpeech(context, ramInfo);
-                break;
-            case "location":
-                String locationInfo = novaUtils.checkLocation();
-                getSpeech(context, locationInfo);
+                generateAudioFile(context, ramInfo);
                 break;
             case "internet":
                 String internetInfo = novaUtils.checkInternet();
@@ -171,48 +163,15 @@ public class Command {
                 } else {
                     internetInfo = "No internet connection";
                 }
-                getSpeech(context, internetInfo);
+                generateAudioFile(context, internetInfo);
                 break;
             case "speaker":
                 String speakerInfo = "If you can hear me then speaker is working correctly";
-                getSpeech(context, speakerInfo);
-                break;
-            case "microphone":
-                String microphoneInfo = "Microphone is working correctly";
-                getSpeech(context, microphoneInfo);
-                break;
-            case "vibration":
-                String vibrationInfo = novaUtils.isVibrationWorking(context);
-                getSpeech(context, vibrationInfo);
-                break;
-            case "language":
-                String languageInfo = novaUtils.getPrimaryLanguage(context);
-                getSpeech(context, languageInfo);
-                break;
-            case "volume":
-                VolumeControl.setStreamMusicVolume(js.optInt("volume"), context);
-                getSpeech(context, "Volume set to " + js.optInt("volume"));
-                break;
-            case "weather":
-
-                break;
-            case "news":
-
-                break;
-            case "contact list":
-
-                break;
-            case "message history":
-
-                break;
-            case "notification history":
-
-                break;
-            case "bluetooth":
-
+                generateAudioFile(context, speakerInfo);
                 break;
             default:
-
+                OverlayWindow.destroy();
+                Log.d("Command", "Unknown check command: " + command);
                 break;
         }
     }
@@ -254,18 +213,6 @@ public class Command {
         }
     }
 
-    private static void getSpeech(Context context, String text) {
-        if (text != null) {
-            if (text.contains("App not found")) {
-                playAudio(context, "nova_app_not_found");
-            } else if (text.contains("Success")) {
-                playAudio(context, "nova_done");
-            } else if (text.contains("Ongoing")) {
-                playAudio(context, "error");
-            }
-        }
-    }
-
     private static void generateAudioFile(Context context, String text) {
         Retrofit retrofit = RetrofitClient.getClient();
         ApiService apiService = retrofit.create(ApiService.class);
@@ -274,6 +221,7 @@ public class Command {
             @Override
             public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
+                    OverlayWindow.response();
                     processBinaryOutput(context, response);
                 } else {
                     OverlayWindow.showError();
@@ -304,21 +252,36 @@ public class Command {
             return;
         }
 
-        File audioFile = new File(context.getExternalFilesDir(null), "streamed_audio.mp3");
+        File audioFile = new File(context.getExternalFilesDir(null), "nova.mp3");
 
         try (BufferedSource source = response.body().source()) {
-            // Read metadata (first line)
-            JSONObject metadata = new JSONObject(source.readUtf8LineStrict());
             // Save audio data
             try (Sink sink = Okio.sink(audioFile)) {
                 source.readAll(sink);
             }
             // Play audio
-            playAudio(context, audioFile.getAbsolutePath());
+            play(context, audioFile.getAbsolutePath());
 
         } catch (Exception e) {
             Log.e("VoiceRecognizer", "Error processing response: " + e.getMessage(), e);
             OverlayWindow.showError();
+        }
+    }
+
+    private static void play(Context context, String audioFile) {
+        try {
+            MediaPlayer mediaPlayer = new MediaPlayer();
+            mediaPlayer.setDataSource(audioFile);
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+            mediaPlayer.setOnCompletionListener(mp -> {
+                mp.release();
+                OverlayWindow.destroy();
+            });
+        } catch (IOException e) {
+            Log.e("Command", "Error playing audio: " + e.getMessage());
+            OverlayWindow.showError();
+            showMessage(e.getMessage(), context);
         }
     }
 

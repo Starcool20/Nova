@@ -1,14 +1,11 @@
 package com.hackathon.nova.util;
 
-import android.Manifest;
 import android.app.ActivityManager;
 import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -27,7 +24,6 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import com.hackathon.nova.command.Command;
 import com.hackathon.nova.helper.PermissionHelper;
@@ -243,22 +239,6 @@ public class NovaUtils {
             return "Total RAM: " + totalRam + " MB\nAvailable RAM: " + availableRam + " MB";
         }
         return "RAM info not available";
-    }
-
-
-    // 🔹 Check Location
-    public String checkLocation() {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return "Location permission needed.";
-        }
-
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if (location != null) {
-            return "Latitude: " + location.getLatitude() + ", Longitude: " + location.getLongitude();
-        } else {
-            return "Location not available.";
-        }
     }
 
     public String checkInternet() {
