@@ -513,8 +513,6 @@ public class VoiceRecognizer implements RecognitionListener {
         }
 
         audioRecorder.stopRecording(0);
-        Command.unRegisterReceiver(context);
-
         new NovaUtils(context).stopService();
     }
 

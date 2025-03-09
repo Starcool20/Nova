@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.hackathon.nova.R;
-import com.hackathon.nova.command.Command;
 
 public class ForegroundService extends Service {
     private static final String CHANNEL_ID = "ForegroundServiceChannel";
@@ -73,8 +72,6 @@ public class ForegroundService extends Service {
     public void stopMyService() {
         stopForeground(true); // Remove the notification
         stopSelf(); // Stop the service
-
-        Command.unRegisterReceiver(this);
     }
 
     private void createNotificationChannel() {

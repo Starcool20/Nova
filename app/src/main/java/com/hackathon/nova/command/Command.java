@@ -182,6 +182,7 @@ public class Command {
         myReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                unRegisterReceiver(context);
                 if (intent.getBooleanExtra("ISSUCCESS", false)) {
                     String msg = intent.getStringExtra("MESSAGE");
                     //getSpeech(context, msg);
@@ -198,10 +199,12 @@ public class Command {
         IntentFilter filter = new IntentFilter("com.hackathon.nova.COMMAND_FOREGROUND_SERVICE");
         ContextCompat.registerReceiver(context, myReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
         isRegistered = true;
+        Log.d("Command", "REGISTERED");
     }
 
-    public static void unRegisterReceiver(Context context) {
+    private static void unRegisterReceiver(Context context) {
         if (myReceiver != null && isRegistered) {
+            Log.d("Command", "UNREGISTERED");
             isRegistered = false;
             context.unregisterReceiver(myReceiver);
             myReceiver = null;

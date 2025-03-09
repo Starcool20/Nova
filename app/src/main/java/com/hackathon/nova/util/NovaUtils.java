@@ -303,6 +303,12 @@ public class NovaUtils {
                 return "WhatsApp is not installed!";
             }
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Command.registerReceiverService(context);
+                startService(intent, "send_msg_whatsapp");
+                return "Pending";
+            }
+
             context.startActivity(intent);
             return "Success";
         } catch (Exception e) {
@@ -331,6 +337,12 @@ public class NovaUtils {
                 intent.setPackage("org.thunderdog.challegram"); // Telegram X
             } else {
                 return "Telegram is not installed!";
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Command.registerReceiverService(context);
+                startService(intent, "send_msg_telegram");
+                return "Pending";
             }
 
             context.startActivity(intent);

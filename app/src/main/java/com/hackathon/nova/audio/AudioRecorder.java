@@ -98,7 +98,7 @@ public class AudioRecorder {
 
     private void onAmplitudeChanged(int amplitude) {
         Log.d("Amplitude", String.valueOf(amplitude));
-        if (amplitude < 3000 && calledCount == 10) {
+        if (amplitude < 5 && calledCount == 10) {
             stopRecording(0);
 
             if (isSpeechDetected) {
@@ -118,7 +118,7 @@ public class AudioRecorder {
 
             return;
         }
-        if (amplitude < 3000) {
+        if (amplitude < 5000) {
             isSpeechDetected = true;
             calledCount = calledCount + 1;
         } else {
